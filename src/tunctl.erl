@@ -90,6 +90,7 @@ up(Dev, {A,B,C,D}, Mask) when byte_size(Dev) < ?IFNAMSIZ, is_integer(Mask) ->
     Module = os(),
     case Module of
         tunctl_linux -> tunctl_linux:up(Dev, {A,B,C,D}, Mask);
+        tunctl_darwin -> mac_up(Dev, {A,B,C,D}, Mask);
         _ -> os_up(Dev, {A,B,C,D}, Mask)
     end;
 up(Dev, {A,B,C,D,E,F,G,H}, Mask) when byte_size(Dev) < ?IFNAMSIZ, is_integer(Mask) ->
@@ -146,6 +147,25 @@ os_up(Dev, {A,B,C,D,E,F,G,H}, Mask) ->
     Cmd = "sudo ifconfig " ++ binary_to_list(Dev) ++ " inet6 add " ++
     inet_parse:ntoa({A,B,C,D,E,F,G,H}) ++
     "/" ++ integer_to_list(Mask) ++ " up",
+    cmd(Cmd).
+
+mac_up(Dev, {A,B,C,D}, Mask) ->
+    {ok,P} = re:compile("tun.*"),
+    case re:run(Dev,P) of
+        {match,_} -> mac_up(tun,Dev, {A,B,C,D}, Mask);
+        _ -> mac_up(tap,Dev,{A,B,C,D}, Mask)
+    end.
+
+mac_up(tap,Dev, {A,B,C,D}, Mask) ->
+    Cmd = "sudo ifconfig " ++ binary_to_list(Dev) ++ " " ++
+    inet_parse:ntoa({A,B,C,D}) ++
+    "/" ++ integer_to_list(Mask) ++ " up",
+    cmd(Cmd);
+
+mac_up(tun,Dev, {A,B,C,D}, Mask) ->
+    IP = inet_parse:ntoa({A,B,C,D}),
+    Cmd = "sudo ifconfig " ++ binary_to_list(Dev) ++ " " ++
+    IP ++ " " ++ IP ++ " netmask 255.255.255.0 up",
     cmd(Cmd).
 
 os_down(Dev) ->
