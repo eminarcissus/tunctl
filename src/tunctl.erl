@@ -87,12 +87,8 @@ up(Dev, {A,B,C,D,E,F,G,H}) ->
     up(Dev, {A,B,C,D,E,F,G,H}, 64).
 
 up(Dev, {A,B,C,D}, Mask) when byte_size(Dev) < ?IFNAMSIZ, is_integer(Mask) ->
-    Module = os(),
-    case Module of
-        tunctl_linux -> tunctl_linux:up(Dev, {A,B,C,D}, Mask);
-        tunctl_darwin -> mac_up(Dev, {A,B,C,D}, Mask);
-        _ -> os_up(Dev, {A,B,C,D}, Mask)
-    end;
+    mac_up(Dev, {A,B,C,D}, Mask);
+
 up(Dev, {A,B,C,D,E,F,G,H}, Mask) when byte_size(Dev) < ?IFNAMSIZ, is_integer(Mask) ->
     os_up(Dev, {A,B,C,D,E,F,G,H}, Mask).
 
@@ -165,8 +161,14 @@ mac_up(tap,Dev, {A,B,C,D}, Mask) ->
 mac_up(tun,Dev, {A,B,C,D}, Mask) ->
     IP = inet_parse:ntoa({A,B,C,D}),
     Cmd = "sudo ifconfig " ++ binary_to_list(Dev) ++ " " ++
-    IP ++ " " ++ IP ++ " netmask 255.255.255.0 up",
-    cmd(Cmd).
+    IP ++ "/24 " ++ IP ++ " netmask 255.255.255.0 up",
+    Net = inet_parse:ntoa({A,B,C,0}),
+    Cmd2 = "sudo route add "++ Net ++ "/24 " ++ IP,
+    io:format("~w\n",[Cmd]),
+    io:format("~w\n",[Cmd2]),
+    cmd(Cmd),
+    cmd(Cmd2),
+    ok.
 
 os_down(Dev) ->
     % BSD systems don't destroy the interface so clean up

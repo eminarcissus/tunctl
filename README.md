@@ -33,6 +33,7 @@ Allow the user running tunctl to call ifconfig using sudo:
     sudo visudo
     youruser ALL=NOPASSWD: /sbin/ifconfig tap*
     youruser ALL=NOPASSWD: /sbin/ifconfig tun*
+    youruser ALL=NOPASSWD: /sbin/route
 
 ### FreeBSD
 
