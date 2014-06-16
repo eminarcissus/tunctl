@@ -160,6 +160,8 @@ mac_up(tap,Dev, {A,B,C,D}, Mask) ->
 
 mac_up(tun,Dev, {A,B,C,D}, Mask) ->
     IP = inet_parse:ntoa({A,B,C,D}),
+    Cmd0 = "sudo ifconfig utun0 down",
+    cmd(Cmd0),
     Cmd = "sudo ifconfig " ++ binary_to_list(Dev) ++ " " ++
     IP ++ "/24 " ++ IP ++ " netmask 255.255.255.0 up",
     Net = inet_parse:ntoa({A,B,C,0}),
