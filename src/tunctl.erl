@@ -166,8 +166,8 @@ mac_up(tun,Dev, {A,B,C,D}, Mask) ->
     IP ++ "/24 " ++ IP ++ " netmask 255.255.255.0 up",
     Net = inet_parse:ntoa({A,B,C,0}),
     Cmd2 = "sudo route add "++ Net ++ "/24 " ++ IP,
-    io:format("~w\n",[Cmd]),
-    io:format("~w\n",[Cmd2]),
+    %io:format("~w\n",[Cmd]),
+    %io:format("~w\n",[Cmd2]),
     cmd(Cmd),
     cmd(Cmd2),
     ok.
